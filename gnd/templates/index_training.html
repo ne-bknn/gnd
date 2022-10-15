@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <h1>Задания</h1>
+
+    <ul>
+        {% for task_name, task in tasks.items() %}
+            <li>
+                <a href="/training/{{ task_name }}">{{ task.task_name() }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
