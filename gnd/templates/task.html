@@ -7,7 +7,7 @@
 
     <p>{{ task.get_task() }}</p>
 
-    {% for item in task.get_fourier_solution() %}
+    {% for item in task.get_solution() %}
         <details>
             <summary>{{ item[0] }}</summary>
             <p>{{ item[1] }}</p>

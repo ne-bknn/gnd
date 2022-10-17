@@ -98,20 +98,29 @@ class FourierHartleyTask(AbstractTask):
         for i in range(N):
             matrix.append([])
             for j in range(N):
-                matrix[i].append(sympy.simplify(sympy.cos(frac*sympy.pi*i*j) -
-                                                1j*sympy.sin(frac*sympy.pi*i*j)))
+                matrix[i].append(
+                    sympy.simplify(
+                        sympy.cos(frac * sympy.pi * i * j)
+                        - 1j * sympy.sin(frac * sympy.pi * i * j)
+                    )
+                )
 
         return sympy.Matrix(matrix)
 
     @staticmethod
     def generate_matrix_hartley(N: int):
         frac = sympy.Rational(2, N)
-        matrix = []
+        matrix: list[list[sympy.Expr]] = []
         for i in range(N):
             matrix.append([])
             for j in range(N):
-                matrix[i].append(sympy.simplify(sympy.cos(frac*sympy.pi*i*j) + sympy.sin(frac*sympy.pi*i*j)))
-    
+                matrix[i].append(
+                    sympy.simplify(
+                        sympy.cos(frac * sympy.pi * i * j)
+                        + sympy.sin(frac * sympy.pi * i * j)
+                    )
+                )
+
         return sympy.Matrix(matrix)
 
     def get_fourier_solution(self) -> list[tuple[str, str]]:
@@ -119,16 +128,16 @@ class FourierHartleyTask(AbstractTask):
 
         matrix_latex = sympy.latex(matrix)
         step1 = f"Матрица преобразования выглядит вот так:\n\\({matrix_latex}\\)"
-        result = sympy.latex(matrix*sympy.Matrix(self.params["values"]))
+        result = sympy.latex(matrix * sympy.Matrix(self.params["values"]))
         step2 = f"Результат преобразования:\n\\( X(i) = {result}\\)"
         return [("Матрица преобразования", step1), ("Результат", step2)]
 
-    def get_fourier_solution(self) -> list[tuple[str, str]]:
+    def get_hartley_solution(self) -> list[tuple[str, str]]:
         matrix = self.generate_matrix_hartley(self.params["n"])
 
         matrix_latex = sympy.latex(matrix)
         step1 = f"Матрица преобразования выглядит вот так:\n\\({matrix_latex}\\)"
-        result = sympy.latex(matrix*sympy.Matrix(self.params["values"]))
+        result = sympy.latex(matrix * sympy.Matrix(self.params["values"]))
         step2 = f"Результат преобразования:\n\\( H(i) = {result}\\)"
         return [("Матрица преобразования", step1), ("Результат", step2)]
 
