@@ -34,7 +34,7 @@ def training_task(request: Request, task_name: str):
         return templates.TemplateResponse("404.html", {"request": request})
 
     return templates.TemplateResponse(
-        "task.html", {"request": request, "task": TaskMap[task_name]}
+        "task.html", {"request": request, "task": TaskMap[task_name](None, True)}
     )
 
 

@@ -4,4 +4,13 @@
 
 {% block content %}
     <h1>{{ task.task_name() }}</h1>
+
+    <p>{{ task.get_task() }}</p>
+
+    {% for item in task.get_fourier_solution() %}
+        <details>
+            <summary>{{ item[0] }}</summary>
+            <p>{{ item[1] }}</p>
+        </details>
+    {% endfor %}
 {% endblock %}
