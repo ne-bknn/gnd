@@ -78,7 +78,7 @@ class FourierHartleyTask(AbstractTask):
         Returns:
             list[str]: List of steps for the solution
         """
-        if self.params["type"] == "Fourier":
+        if self.params["type"] == "fourier":
             return self.get_fourier_solution()
         else:
             return self.get_hartley_solution()
@@ -103,6 +103,17 @@ class FourierHartleyTask(AbstractTask):
 
         return sympy.Matrix(matrix)
 
+    @staticmethod
+    def generate_matrix_hartley(N: int):
+        frac = sympy.Rational(2, N)
+        matrix = []
+        for i in range(N):
+            matrix.append([])
+            for j in range(N):
+                matrix[i].append(sympy.simplify(sympy.cos(frac*sympy.pi*i*j) + sympy.sin(frac*sympy.pi*i*j)))
+    
+        return sympy.Matrix(matrix)
+
     def get_fourier_solution(self) -> list[tuple[str, str]]:
         matrix = self.generate_matrix_fourier(self.params["n"])
 
@@ -112,9 +123,14 @@ class FourierHartleyTask(AbstractTask):
         step2 = f"Результат преобразования:\n\\( X(i) = {result}\\)"
         return [("Матрица преобразования", step1), ("Результат", step2)]
 
-    def get_hartley_solution(self) -> list[str]:
-        step1 = "Fourier transform looks like this:\n\\("
-        return [step1]
+    def get_fourier_solution(self) -> list[tuple[str, str]]:
+        matrix = self.generate_matrix_hartley(self.params["n"])
+
+        matrix_latex = sympy.latex(matrix)
+        step1 = f"Матрица преобразования выглядит вот так:\n\\({matrix_latex}\\)"
+        result = sympy.latex(matrix*sympy.Matrix(self.params["values"]))
+        step2 = f"Результат преобразования:\n\\( H(i) = {result}\\)"
+        return [("Матрица преобразования", step1), ("Результат", step2)]
 
 
 TaskMap = {"transform_1d": FourierHartleyTask}
