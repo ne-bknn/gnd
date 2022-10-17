@@ -40,4 +40,4 @@ def training_task(request: Request, task_name: str):
 
 if __name__ == "__main__":
 
-    uvicorn.run(app, host="0.0.0.0")
+    uvicorn.run(app, host="0.0.0.0", port=8999)
