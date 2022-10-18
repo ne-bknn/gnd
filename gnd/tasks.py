@@ -352,7 +352,7 @@ class FourierByReverseFourier(AbstractTask):
     def get_task(self):
         values = self.params["values"]
         matrix = sympy.latex(values)
-        task = f"Примени к \\({{x(i)}}={matrix}\\) обратное преобразование Фурье через прямое:\n"
+        task = f"Примени к \\({{x(i)}}={matrix}\\) обратное преобразование Фурье через прямое:\n(Выглядит как говно к сожалению потому что симпай отдает кривой латех)"
         return task
 
     @staticmethod
@@ -373,14 +373,15 @@ class FourierByReverseFourier(AbstractTask):
 
     def get_solution(self):
         matrix = self.generate_matrix_fourier(self.params["n"])
+        values = self.params["values"]
 
+        step0 = f"Заменим \\(X(k)\\) на \\(X'(k)\\): \\({sympy.latex(values.H)}\\)"
         matrix_latex = sympy.latex(matrix)
         step1 = f"Матрица преобразования выглядит вот так:\n\\({matrix_latex}\\)"
-        values = self.params["values"]
-        result = matrix * values
+        result = values.H * matrix
         result_latex = sympy.latex(result)
         simplified = sympy.simplify(result)
-        step2 = f"Перемножаем последовательность и матрицу:\n\\( X'(i) = {result_latex} = {sympy.latex(simplified)}\\)"
+        step2 = f"Перемножаем последовательность и матрицу:\n\\( X'(i) = {result_latex} =\n{sympy.latex(simplified)}\\)"
         step3 = f"Вторым шагом мы находим сопряженное к результату:\n\\({sympy.latex(simplified.H)}\\)"
         conjugate = simplified.H
         step4 = (
@@ -402,6 +403,7 @@ class FourierByReverseFourier(AbstractTask):
         print(type(step4))
 
         return [
+            ("Замена", step0),
             ("Матрица преобразования", step1),
             ("Перемножение", step2),
             ("Третий шаг задачи", step3),
