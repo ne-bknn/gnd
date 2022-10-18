@@ -59,7 +59,11 @@ class FourierHartleyTask(AbstractTask):
             t = random.choice(param_boundaries["type"]["values"])
 
         assert isinstance(t, str)  # type narrowing
-        v = [random.choice(param_boundaries["values"]["values"]) for _ in range(n)]
+        v = [
+            random.choice(param_boundaries["values"]["values"])
+            + self.random_complex_emit()
+            for _ in range(n)
+        ]
         params = {
             "n": n,
             "type": t,
@@ -121,6 +125,13 @@ class FourierHartleyTask(AbstractTask):
         return sympy.Matrix(matrix)
 
     @staticmethod
+    def random_complex_emit():
+        if random.random() > 0.7:
+            return random.choice([-1j, 1j]) * random.randrange(1, 4)
+        else:
+            return 0
+
+    @staticmethod
     def generate_matrix_hartley(N: int):
         frac = sympy.Rational(2, N)
         matrix: list[list[sympy.Expr]] = []
@@ -167,6 +178,13 @@ class FourierHartley2dTask(AbstractTask):
     def task_name() -> str:
         return "Двумерное ДПФ/ДПХ"
 
+    @staticmethod
+    def random_complex_emit():
+        if random.random() > 0.7:
+            return random.choice([-1j, 1j]) * random.randrange(1, 4)
+        else:
+            return 0
+
     def randomize_params(self, **kwargs) -> Dict[str, Any]:
         param_boundaries = self.get_param_boundaries()
         if "n" in kwargs:
@@ -185,7 +203,11 @@ class FourierHartley2dTask(AbstractTask):
         assert isinstance(t, str)  # type narrowing
         v = sympy.Matrix(
             [
-                [random.choice(param_boundaries["values"]["values"]) for _ in range(n)]
+                [
+                    random.choice(param_boundaries["values"]["values"])
+                    + self.random_complex_emit()
+                    for _ in range(n)
+                ]
                 for _ in range(m)
             ]
         )
@@ -298,6 +320,13 @@ class FourierByReverseFourier(AbstractTask):
             "values": {"values": list(range(-5, 10))},
         }
 
+    @staticmethod
+    def random_complex_emit():
+        if random.random() > 0.7:
+            return random.choice([-1j, 1j]) * random.randrange(1, 4)
+        else:
+            return 0
+
     def randomize_params(self, **kwargs) -> Dict[str, Any]:
         param_boundaries = self.get_param_boundaries()
         if "n" in kwargs:
@@ -306,7 +335,11 @@ class FourierByReverseFourier(AbstractTask):
             n = random.choice(param_boundaries["n"]["values"])
         assert isinstance(n, int)
         v = sympy.Matrix(
-            [random.choice(param_boundaries["values"]["values"]) for _ in range(n)]
+            [
+                random.choice(param_boundaries["values"]["values"])
+                + self.random_complex_emit()
+                for _ in range(n)
+            ]
         )
 
         params = {
@@ -410,6 +443,13 @@ class HarmonicAmplitudeTask(AbstractTask):
 
         return sympy.Matrix(matrix)
 
+    @staticmethod
+    def random_complex_emit():
+        if random.random() > 0.7:
+            return random.choice([-1j, 1j]) * random.randrange(1, 4)
+        else:
+            return 0
+
     def randomize_params(self, **kwargs) -> Dict[str, Any]:
         param_boundaries = self.get_param_boundaries()
         if "n" in kwargs:
@@ -425,7 +465,11 @@ class HarmonicAmplitudeTask(AbstractTask):
             i = random.choice(list(range(1, n // 2 + 1)))
 
         v = sympy.Matrix(
-            [random.choice(param_boundaries["values"]["values"]) for _ in range(n)]
+            [
+                random.choice(param_boundaries["values"]["values"])
+                + self.random_complex_emit()
+                for _ in range(n)
+            ]
         )
 
         params = {
