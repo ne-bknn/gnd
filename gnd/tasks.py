@@ -376,8 +376,104 @@ class FourierByReverseFourier(AbstractTask):
         ]
 
 
+class HarmonicAmplitudeTask(AbstractTask):
+    def __init__(
+        self, params: Dict[str, str | int] | None = None, randomize: bool = False
+    ):
+        super().__init__(params, randomize)
+
+    @staticmethod
+    def task_name():
+        return "Амплитуда N-ной гармоники"
+
+    @staticmethod
+    def get_param_boundaries() -> Dict[str, Dict[str, Any]]:
+        return {
+            "n": {"values": [3, 4, 6, 8, 12]},
+            "values": {"values": list(range(-5, 10))},
+            "i": {"values": list(range(1, 10))},
+        }
+
+    @staticmethod
+    def generate_matrix_fourier(N: int) -> sympy.Matrix:
+        frac = sympy.Rational(2, N)
+        matrix: List[List[sympy.Expr]] = []
+        for i in range(N):
+            matrix.append([])
+            for j in range(N):
+                matrix[i].append(
+                    sympy.simplify(
+                        sympy.cos(frac * sympy.pi * i * j)
+                        - 1j * sympy.sin(frac * sympy.pi * i * j)
+                    )
+                )
+
+        return sympy.Matrix(matrix)
+
+    def randomize_params(self, **kwargs) -> Dict[str, Any]:
+        param_boundaries = self.get_param_boundaries()
+        if "n" in kwargs:
+            n = int(kwargs["n"])
+        else:
+            n = random.choice(param_boundaries["n"]["values"])
+        assert isinstance(n, int)
+
+        if "i" in kwargs:
+            i = int(kwargs["i"])
+        else:
+            i = random.choice(param_boundaries["i"]["values"])
+
+        v = sympy.Matrix(
+            [random.choice(param_boundaries["values"]["values"]) for _ in range(n)]
+        )
+
+        params = {
+            "n": n,
+            "values": v,
+            "i": i,
+        }
+
+        return params
+
+    def get_task(self):
+        values = self.params["values"]
+        matrix = sympy.latex(values)
+        i = self.params["i"]
+        task = f"Найди {i}-ую гармонику для \\({{x(i)}}={matrix}\\)\n"
+        return task
+
+    def get_solution(self):
+        matrix = self.generate_matrix_fourier(self.params["n"])
+        i = self.params["i"]
+        n = self.params["n"]
+        matrix_latex = sympy.latex(matrix)
+        step1 = f"Матрица преобразования выглядит вот так:\n\\({matrix_latex}\\)"
+        values = self.params["values"]
+        result = matrix * values
+        result_latex = sympy.latex(result)
+        simplified = sympy.simplify(result)
+        step2 = f"Перемножаем последовательность и матрицу:\n\\( X(i) = {result_latex} = {sympy.latex(simplified)}\\)"
+        step3 = (
+            f"Возьмем модуль i-ого элемента из преобразованной последовательности, поделим на количество элементов и получим:\n"
+            + "\\(\\frac{|"
+            + sympy.latex(simplified[i])
+            + "|}{n} = \\frac{"
+            + sympy.latex(abs(simplified[i]))
+            + "}{"
+            + str(n)
+            + "}\\)"
+        )
+
+        return [
+            ("Матрица преобразования", step1),
+            ("Перемножение", step2),
+            ("Последний шаг", step3),
+        ]
+
+
 TaskMap = {
     "transform_1d": FourierHartleyTask,
     "transoform_2d": FourierHartley2dTask,
     "reverse": FourierByReverseFourier,
+    "harmonic_amplitude": HarmonicAmplitudeTask,
 }
