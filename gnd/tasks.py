@@ -159,6 +159,7 @@ class FourierHartley2dTask(AbstractTask):
         n = random.choice(param_boundaries["n"]["values"])
         m = random.choice(param_boundaries["m"]["values"])
         assert isinstance(n, int)  # type narrowing
+        assert isinstance(m, int)  # type narrowing
         t = random.choice(param_boundaries["type"]["values"])
         assert isinstance(t, str)  # type narrowing
         v = sympy.Matrix(
@@ -181,6 +182,7 @@ class FourierHartley2dTask(AbstractTask):
             "m": {"values": [3, 4, 6, 8, 12]},
             "type": {"values": ["fourier", "hartley"]},
             "values": {"values": list(range(-5, 10))},
+            "coordinates": {"values": ["physical", "algebraic"]},
         }
 
     def get_task(self) -> str:
@@ -190,7 +192,7 @@ class FourierHartley2dTask(AbstractTask):
             str: Task
         """
 
-        task = f"Преобразуй \\({{x(i)}}={sympy.latex(self.params['values'])}\\) последовательность с помощью преобразования {'Фурье' if self.params['type'] == 'fourier' else 'Хартли'}:\n"
+        task = f"Преобразуй \\({{x(i)}}={sympy.latex(self.params['values'])}\\) матрицу с помощью преобразования {'Фурье' if self.params['type'] == 'fourier' else 'Хартли'}:\n"
         return task
 
     def get_solution(self) -> list[str]:
@@ -206,14 +208,6 @@ class FourierHartley2dTask(AbstractTask):
 
     @staticmethod
     def generate_matrix_fourier(N: int) -> sympy.Matrix:
-        """Generates a matrix for Fourier transform.
-
-        Args:
-            n (int): Size of the matrix
-
-        Returns:
-            sympy.Matrix: Generated matrix
-        """
         frac = sympy.Rational(2, N)
         matrix: List[List[sympy.Expr]] = []
         for i in range(N):
@@ -263,4 +257,99 @@ class FourierHartley2dTask(AbstractTask):
         return [("Матрица преобразования", step1), ("Результат", step2)]
 
 
-TaskMap = {"transform_1d": FourierHartleyTask, "transoform_2d": FourierHartley2dTask}
+class FourierByReverseFourier(AbstractTask):
+    def __init__(
+        self,
+        params: Dict[str, str | int] | None = None,
+        randomize: bool = False,
+    ):
+        super().__init__(params, randomize)
+
+    @staticmethod
+    def task_name():
+        return "Обратное преобразование Фурье через прямое"
+
+    def get_param_boundaries(self) -> Dict[str, Dict[str, Any]]:
+        return {
+            "n": {"values": [3, 4, 6, 8, 12]},
+            "values": {"values": list(range(-5, 10))},
+        }
+
+    def randomize_params(self) -> Dict[str, Any]:
+        param_boundaries = self.get_param_boundaries()
+        n = random.choice(param_boundaries["n"]["values"])
+        assert isinstance(n, int)
+        v = sympy.Matrix(
+            [random.choice(param_boundaries["values"]["values"]) for _ in range(n)]
+        )
+
+        params = {
+            "n": n,
+            "values": v,
+        }
+
+        return params
+
+    def get_task(self):
+        task = f"Примени к \\({{x(i)}}={sympy.latex(self.params['values'])}\\) обратное преобразование Фурье через прямое:\n"
+        return task
+
+    @staticmethod
+    def generate_matrix_fourier(N: int) -> sympy.Matrix:
+        frac = sympy.Rational(2, N)
+        matrix: List[List[sympy.Expr]] = []
+        for i in range(N):
+            matrix.append([])
+            for j in range(N):
+                matrix[i].append(
+                    sympy.simplify(
+                        sympy.cos(frac * sympy.pi * i * j)
+                        - 1j * sympy.sin(frac * sympy.pi * i * j)
+                    )
+                )
+
+        return sympy.Matrix(matrix)
+
+    def get_solution(self):
+        matrix = self.generate_matrix_fourier(self.params["n"])
+
+        matrix_latex = sympy.latex(matrix)
+        step1 = f"Матрица преобразования выглядит вот так:\n\\({matrix_latex}\\)"
+        values = self.params["values"]
+        result = matrix * values
+        result_latex = sympy.latex(result)
+        simplified = sympy.simplify(result)
+        step2 = f"Перемножаем последовательность и матрицу:\n\\( X'(i) = {result_latex} = {sympy.latex(simplified)}\\)"
+        step3 = f"Вторым шагом мы находим сопряженное к результату:\n\\({sympy.latex(simplified.H)}\\)"
+        conjugate = simplified.H
+        step4 = (
+            "Делим на количество коэффициентов:\n"
+            + "\\( X(i) = \\frac"
+            + "{"
+            + sympy.latex(conjugate)
+            + "}{N} = \\frac"
+            + "{"
+            + sympy.latex(conjugate)
+            + "}"
+            + "{"
+            + str(len(values))
+            + "}"
+            + "\\)"
+        )
+
+        print(step4)
+        print(type(step4))
+
+        return [
+            ("Матрица преобразования", step1),
+            ("Перемножение", step2),
+            ("Третий шаг задачи", step3),
+            ("Финальный шаг задачи", step4),
+        ]
+
+
+TaskMap = {
+    "transform_1d": FourierHartleyTask,
+    "transoform_2d": FourierHartley2dTask,
+    "reverse": FourierByReverseFourier,
+}
