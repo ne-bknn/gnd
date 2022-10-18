@@ -422,8 +422,8 @@ class HarmonicAmplitudeTask(AbstractTask):
         if "i" in kwargs:
             i = int(kwargs["i"])
         else:
-            while i is None or i >= n // 2:
-                i = random.choice(param_boundaries["i"]["values"])
+            boundary = param_boundaries["i"]["values"]
+            i = random.choice(param_boundaries["i"]["values"][0 : boundary.find(i)])
 
         v = sympy.Matrix(
             [random.choice(param_boundaries["values"]["values"]) for _ in range(n)]
