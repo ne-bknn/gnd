@@ -53,7 +53,11 @@ class FourierHartleyTask(AbstractTask):
         else:
             n = random.choice(param_boundaries["n"]["values"])
         assert isinstance(n, int)  # type narrowing
-        t = random.choice(param_boundaries["type"]["values"])
+        if "type" in kwargs:
+            t = kwargs["type"]
+        else:
+            t = random.choice(param_boundaries["type"]["values"])
+
         assert isinstance(t, str)  # type narrowing
         v = [random.choice(param_boundaries["values"]["values"]) for _ in range(n)]
         params = {
