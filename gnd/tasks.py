@@ -12,13 +12,19 @@ class AbstractTask:
         self.params: Dict[str, str | int]
         if params is None and randomize:
             self.params = self.randomize_params()
-        elif params is not None:
+        elif params is not None and not randomize:
             self.params = params
+        else:
+            # Ranomized not specified params
 
-    def randomize_params(self) -> Dict[str, Any]:
+            new_params = self.randomize_params(**params)
+            self.params = new_params
+
+    def randomize_params(self, **kwargs) -> Dict[str, Any]:
         ...
 
-    def get_param_boundaries(self) -> Dict[str, Dict[str, Any]]:
+    @staticmethod
+    def get_param_boundaries() -> Dict[str, Dict[str, Any]]:
         ...
 
     def get_task(self) -> str:
@@ -40,9 +46,12 @@ class FourierHartleyTask(AbstractTask):
     def task_name() -> str:
         return "Одномерное ДПФ/ДПХ"
 
-    def randomize_params(self) -> Dict[str, Any]:
+    def randomize_params(self, **kwargs) -> Dict[str, Any]:
         param_boundaries = self.get_param_boundaries()
-        n = random.choice(param_boundaries["n"]["values"])
+        if "n" in kwargs:
+            n = int(kwargs["n"])
+        else:
+            n = random.choice(param_boundaries["n"]["values"])
         assert isinstance(n, int)  # type narrowing
         t = random.choice(param_boundaries["type"]["values"])
         assert isinstance(t, str)  # type narrowing
@@ -154,10 +163,18 @@ class FourierHartley2dTask(AbstractTask):
     def task_name() -> str:
         return "Двумерное ДПФ/ДПХ"
 
-    def randomize_params(self) -> Dict[str, Any]:
+    def randomize_params(self, **kwargs) -> Dict[str, Any]:
         param_boundaries = self.get_param_boundaries()
-        n = random.choice(param_boundaries["n"]["values"])
-        m = random.choice(param_boundaries["m"]["values"])
+        if "n" in kwargs:
+            n = int(kwargs["n"])
+        else:
+            n = random.choice(param_boundaries["n"]["values"])
+
+        if "m" in kwargs:
+            m = int(kwargs["m"])
+        else:
+            m = random.choice(param_boundaries["m"]["values"])
+
         assert isinstance(n, int)  # type narrowing
         assert isinstance(m, int)  # type narrowing
         t = random.choice(param_boundaries["type"]["values"])
@@ -170,6 +187,7 @@ class FourierHartley2dTask(AbstractTask):
         )
         params = {
             "n": n,
+            "m": m,
             "type": t,
             "values": v,
         }
@@ -269,15 +287,19 @@ class FourierByReverseFourier(AbstractTask):
     def task_name():
         return "Обратное преобразование Фурье через прямое"
 
-    def get_param_boundaries(self) -> Dict[str, Dict[str, Any]]:
+    @staticmethod
+    def get_param_boundaries() -> Dict[str, Dict[str, Any]]:
         return {
             "n": {"values": [3, 4, 6, 8, 12]},
             "values": {"values": list(range(-5, 10))},
         }
 
-    def randomize_params(self) -> Dict[str, Any]:
+    def randomize_params(self, **kwargs) -> Dict[str, Any]:
         param_boundaries = self.get_param_boundaries()
-        n = random.choice(param_boundaries["n"]["values"])
+        if "n" in kwargs:
+            n = int(kwargs["n"])
+        else:
+            n = random.choice(param_boundaries["n"]["values"])
         assert isinstance(n, int)
         v = sympy.Matrix(
             [random.choice(param_boundaries["values"]["values"]) for _ in range(n)]
@@ -291,7 +313,9 @@ class FourierByReverseFourier(AbstractTask):
         return params
 
     def get_task(self):
-        task = f"Примени к \\({{x(i)}}={sympy.latex(self.params['values'])}\\) обратное преобразование Фурье через прямое:\n"
+        values = self.params["values"]
+        matrix = sympy.latex(values)
+        task = f"Примени к \\({{x(i)}}={matrix}\\) обратное преобразование Фурье через прямое:\n"
         return task
 
     @staticmethod

@@ -3,14 +3,25 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-    <h1>{{ task.task_name() }}</h1>
+<h1>{{ task.task_name() }}</h1>
 
-    <p>{{ task.get_task() }}</p>
-
-    {% for item in task.get_solution() %}
-        <details>
-            <summary>{{ item[0] }}</summary>
-            <p>{{ item[1] }}</p>
-        </details>
+<form>
+    {% for field_name, params in params_to_set.items() %}
+    <label>{{ field_name }}</label>
+    <select id="{{ field_name }}" name="{{ field_name }}">
+        {% for value in params["values"] %}
+        <option value="{{ value }}">{{ value }}</option>
+        {% endfor %}
+    </select>
     {% endfor %}
+    <button id="submit" type="submit">Сгенерировать</button>
+</form>
+<p>{{ task.get_task() }}</p>
+
+{% for item in task.get_solution() %}
+<details>
+    <summary>{{ item[0] }}</summary>
+    <p>{{ item[1] }}</p>
+</details>
+{% endfor %}
 {% endblock %}
